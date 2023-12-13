@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              http://fsylum.net
- * @since             1.0.0
+ * @since             1.0.3
  * @package           Outdated_Notice
  *
  * @wordpress-plugin
  * Plugin Name:       Outdated Notice
  * Plugin URI:        http://wordpress.org/plugins/outdated-notice
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.0.0
+ * Version:           1.0.3
  * Author:            Firdaus Zahari
  * Author URI:        http://fsylum.net
  * License:           GPL-2.0+

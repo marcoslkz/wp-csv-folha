@@ -32,21 +32,15 @@ class Outdated_Notice_Deactivator
 	 */
 	public static function deactivate()
 	{
-		csv_plugin_deactivation()
-	}
-
-	/**
-	 * Deactivate plugin and remove table "csv_teste"
-	 */
-	function csv_plugin_deactivation()
-	{
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'csv_folha';
 
 		// Check if the table exists
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name) {
+		if ($wpdb->get_var("select 1 from information_schema.tables where table_name='$table_name'")) {
 			// Drop the table
 			$wpdb->query("DROP TABLE $table_name");
 		}
+		//csv_plugin_deactivation()
 	}
+
 }

@@ -22,6 +22,7 @@
  */
 class Outdated_Notice_Admin
 {
+	private $table_name ;
 
 	/**
 	 * The ID of this plugin.
@@ -59,9 +60,13 @@ class Outdated_Notice_Admin
 	 */
 	public function __construct($plugin_name, $version)
 	{
+		global $wpdb;
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->table_name  = $wpdb->prefix . 'csv_folha';
+		// Create the CSV table 
+		$this->create_csv_table();
 	}
 
 	/**
@@ -162,20 +167,20 @@ class Outdated_Notice_Admin
 		);
 
 		add_settings_field(
-			$this->option_name . '_day',
-			__('Post is outdated after', 'outdated-notice'),
-			array($this, $this->option_name . '_day_cb'),
+			$this->option_name . '_month',
+			__('Informe o mês do arquivo:', 'outdated-notice'),
+			array($this, $this->option_name . '_month_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
-			array('label_for' => $this->option_name . '_day')
+			array('label_for' => $this->option_name . '_month')
 		);
 
 		register_setting($this->plugin_name, $this->option_name . '_position', array($this, $this->option_name . '_sanitize_position'));
-		register_setting($this->plugin_name, $this->option_name . '_day', 'intval');
+		register_setting($this->plugin_name, $this->option_name . '_month', 'intval');
 
 		add_settings_section(
-			$this->option_name . '_general',
-			__('General', 'outdated-notice'),
+			$this->option_name . '_upload',
+			__('CSV upload', 'outdated-notice'),
 			array($this, 'csv_upload_field_cb'),
 			$this->plugin_name
 		);
@@ -188,7 +193,10 @@ class Outdated_Notice_Admin
 	 */
 	public function outdated_notice_general_cb()
 	{
-		echo '<p>' . __('Please change the settings accordingly.', 'outdated-notice') . '</p>';
+		global $wpdb;
+		
+		echo '<p>' . __('CSV Folha', 'outdated-notice') . '</p>';
+		
 	}
 
 	/**
@@ -198,12 +206,13 @@ class Outdated_Notice_Admin
 	 */
 	public function outdated_notice_position_cb()
 	{
+		global $wpdb;
 		$position = get_option($this->option_name . '_position');
 ?>
 		<fieldset>
 			<label>
 				<input type="radio" name="<?php echo $this->option_name . '_position' ?>" id="<?php echo $this->option_name . '_position' ?>" value="before" <?php checked($position, 'before'); ?>>
-				<?php _e('Before the content', 'outdated-notice'); ?>
+				<?php _e($wpdb->get_var("SELECT COUNT(id) FROM '$this->table_name'") . " linhas.", 'outdated-notice'); ?>
 			</label>
 			<br>
 			<label>
@@ -219,10 +228,10 @@ class Outdated_Notice_Admin
 	 *
 	 * @since  1.0.0
 	 */
-	public function outdated_notice_day_cb()
+	public function outdated_notice_month_cb()
 	{
-		$day = get_option($this->option_name . '_day');
-		echo '<input type="text" name="' . $this->option_name . '_day' . '" id="' . $this->option_name . '_day' . '" value="' . $day . '"> ' . __('days', 'outdated-notice');
+		$month = get_option($this->option_name . '_month');
+		echo '<input type="text" name="' . $this->option_name . '_month' . '" id="' . $this->option_name . '_month' . '" value="' . $month . '"> ' . __('', 'outdated-notice');
 	}
 
 	/**
@@ -246,15 +255,16 @@ class Outdated_Notice_Admin
 	 */
 	public function csv_upload_field_cb()
 	{
-		// Check if the "Month File" option has been selected
-		$selected_month = isset($_POST[$this->option_name . '_month']) ? absint($_POST[$this->option_name . '_month']) : 0;
+		// Check if the "Escolha o mês" option has been selected
+		$selected_month = get_option($this->option_name . '_month');
+		#$selected_month = isset($_POST[$this->option_name . '_month']) ? absint($_POST[$this->option_name . '_month']) : 0;
 
 	?>
-		<!-- HTML markup for the "Month File" option field -->
+		<!-- HTML markup for the "Escolha o mês" option field -->
 		<fieldset>
-			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('Month File', 'your-textdomain'); ?></label>
+			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('Escolha o mês:', 'outdated-notice'); ?></label>
 			<select name="<?php echo $this->option_name . '_month'; ?>" id="<?php echo $this->option_name . '_month'; ?>" required>
-				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Please select the month!', 'your-textdomain'); ?></option>
+				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o mês!', 'outdated-notice'); ?></option>
 				<?php
 				// Generate options for months
 				for ($i = 1; $i <= 12; $i++) {
@@ -265,8 +275,8 @@ class Outdated_Notice_Admin
 		</fieldset>
 		<!-- HTML markup for the CSV upload field -->
 		<fieldset>
-			<label for="<?php echo $this->option_name . '_csv_file'; ?>"><?php _e('Upload CSV File', 'your-textdomain'); ?></label>
-			<input type="file" name="<?php echo $this->option_name . '_csv_file'; ?>" id="<?php echo $this->option_name . '_csv_file'; ?>" accept=".csv" required>
+			<label for="<?php echo $this->option_name . '_csv_file'; ?>"><?php _e('Upload CSV File', 'outdated-notice'); ?></label>
+			<input type="file" name="<?php echo $this->option_name . '_csv_file'; ?>" id="<?php echo $this->option_name . '_csv_file'; ?>" accept=".csv, .txt" required>
 		</fieldset>
 
 		<?php
@@ -276,7 +286,7 @@ class Outdated_Notice_Admin
 
 			// Validate file type
 			$file_type = wp_check_filetype($csv_file['name'], array('csv' => 'text/csv'));
-			if ($file_type['ext'] !== 'csv') {
+			if ($file_type['ext'] !== 'csv' || $file_type['ext'] !== 'txt' ) {
 				echo '<p style="color: red;">Invalid file type. Please upload a CSV file.</p>';
 				return;
 			}
@@ -287,19 +297,18 @@ class Outdated_Notice_Admin
 			// Get column headers
 			$headers = array_shift($csv_data);
 
-			// Create the CSV table if it doesn't exist
-			$this->create_csv_table();
-
 			// Insert data into the CSV table
 			if ($this->insert_csv_data($headers, $csv_data, $selected_month)) {
 				echo '<p style="color: green;">CSV file uploaded and data inserted into the table.</p>';
 			} else {
-				echo '<p style="color: red;">CSV file upload error.</p>';
+				echo '<p style="color: red;">CSV upload error.</p>';
 			}
+		} else {
+			echo '<p style="color: yellow;">Informe o mês e o respectivo arquivo CSV.</p>';
+
 		}
 		?>
-
-<?php
+		<?php
 	}
 
 	/**
@@ -309,19 +318,22 @@ class Outdated_Notice_Admin
 	{
 		global $wpdb;
 
-		$table_name = $wpdb->prefix . 'csv_folha';
-
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+		if (!$wpdb->get_var("select 1 from information_schema.tables where table_name='$this->table_name '")) {
 			$charset_collate = $wpdb->get_charset_collate();
 
-			$sql = "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            " . $this->generate_field_columns() . ",
-            PRIMARY KEY  (id)
-        ) $charset_collate;";
+			$sql = "CREATE TABLE $this->table_name (id mediumint(9) NOT NULL AUTO_INCREMENT, "
+			 . $this->generate_field_columns() 
+			 . ", PRIMARY KEY  (id)) $charset_collate;";
 
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($sql);
+			try{
+				require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+				dbDelta($sql);
+			} catch (Exception $e) {
+				// Handle the exception here (e.g., log the error or display a message)
+				error_log('Database error: ' . $e->getMessage());
+				// You can also display an error message if needed
+				//wp_die('Error creating table: ' . $e->getMessage());
+			}
 		}
 	}
 
@@ -337,7 +349,7 @@ class Outdated_Notice_Admin
 		}
 		$columns[] = "month INT NOT NULL DEFAULT 0";
 
-		return implode(",\n", $columns);
+		return implode(", ", $columns);
 	}
 
 	/**
@@ -347,8 +359,6 @@ class Outdated_Notice_Admin
 	{
 		global $wpdb;
 
-		$table_name = $wpdb->prefix . 'csv_folha';
-
 		foreach ($data as $row) {
 			$insert_data = array();
 			foreach ($row as $key => $value) {
@@ -356,11 +366,19 @@ class Outdated_Notice_Admin
 			}
 			$insert_data["month"] = $month;
 
-			$wpdb->insert($table_name, $insert_data);
+			try{
+				$wpdb->insert($this->table_name , $insert_data);
+			} catch (Exception $e) {
+				// Handle the exception here (e.g., log the error or display a message)
+				error_log('Database error: ' . $e->getMessage());
+				// You can also display an error message if needed
+				//wp_die('Error creating table: ' . $e->getMessage());
+			}
 		}
+		return $wpdb->get_var("select 1 from $this->table_name where month == $month ");
 	}
 	/**
-	 * Delete rows based on "month" value in "field_7" of "csv_teste" table
+	 * Delete rows based on "month" value in table
 	 *
 	 * @param  string $month
 	 * @return bool
@@ -369,10 +387,8 @@ class Outdated_Notice_Admin
 	{
 		global $wpdb;
 
-		$table_name = $wpdb->prefix . "csv_teste";
-
 		// Prepare SQL statement
-		$sql = "DELETE FROM $table_name WHERE month = %s";
+		$sql = "DELETE FROM $this->table_name  WHERE month = %s";
 
 		// Prepare and execute query
 		$result = $wpdb->query($wpdb->prepare($sql, $month));
