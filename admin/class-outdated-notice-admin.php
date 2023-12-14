@@ -173,10 +173,11 @@ class Outdated_Notice_Admin
 			$this->option_name . '_general',
 			array('label_for' => $this->option_name . '_month')
 		);
-		add_settings_section(
+
+		add_settings_field(
 			$this->option_name . '_upload',
 			__('CSV upload', 'outdated-notice'),
-			array($this, $this, $this->option_name . 'csv_cb'),
+			array($this, $this->option_name . '_csv_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
 			array('label_for' => $this->option_name . '_upload')
@@ -184,6 +185,7 @@ class Outdated_Notice_Admin
 
 		register_setting($this->plugin_name, $this->option_name . '_position', array($this, $this->option_name . '_sanitize_position'));
 		register_setting($this->plugin_name, $this->option_name . '_month', 'intval');
+		//register_setting($this->plugin_name, $this->option_name . '_upload');
 
 	}
 
@@ -234,7 +236,7 @@ class Outdated_Notice_Admin
 	?>
 		<!-- HTML markup for the "Escolha o mês" option field -->
 		<fieldset>
-			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('Escolha o mês:', 'outdated-notice'); ?></label>
+			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('*', 'outdated-notice'); ?></label>
 			<select name="<?php echo $this->option_name . '_month'; ?>" id="<?php echo $this->option_name . '_month'; ?>" required>
 				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o mês!', 'outdated-notice'); ?></option>
 				<?php
@@ -270,55 +272,40 @@ class Outdated_Notice_Admin
 	 */
 	public function outdated_notice_csv_cb()
 	{
-		// Check if the "Escolha o mês" option has been selected
-		$selected_month = get_option($this->option_name . '_month');
-		#$selected_month = isset($_POST[$this->option_name . '_month']) ? absint($_POST[$this->option_name . '_month']) : 0;
-
-	?>
-		<!-- HTML markup for the CSV upload field -->
+		?>
 		<fieldset>
-			<label for="<?php echo $this->option_name . '_csv_file'; ?>"><?php _e('Upload CSV File', 'outdated-notice'); ?></label>
-			<input type="file" name="<?php echo $this->option_name . '_csv_file'; ?>" id="<?php echo $this->option_name . '_csv_file'; ?>" accept=".csv, .txt" required>
+		<label>
+			<input type="file" name="<?php echo $this->option_name . '_upload'; ?>" id="<?php echo $this->option_name . '_upload'; ?>" accept=".csv, .txt">
 		</fieldset>
 		<?php
-		// Process CSV file if form is submitted
+		$selected_month = get_option($this->option_name . '_month');
+		// Process CSV file if form is send
 		//if (isset($_POST['upload_csv']) && check_admin_referer('csv_upload_nonce', 'csv_upload_nonce') && $selected_month !== 0) {
-		if (isset($_POST['upload_csv']) ) { // && $selected_month > 0) {
-
-			/////////////teste
-			wp_die('Error creating table: ');
-
-			$csv_file = $_FILES[$this->option_name . '_csv_file'];
-
-			// Validate file type
-			//$file_type = wp_check_filetype($csv_file['name'], array('csv' => 'text/csv'));
-			//if ($file_type['ext'] !== 'csv' || $file_type['ext'] !== 'txt'  ) {
-			//	echo '<p style="color: red;">Invalid file type. Please upload a CSV file.</p>';
-			//	return;
-			//}
+		if ($_SERVER['REQUEST_METHOD'] == 'POST' && $selected_month > 0) {
+			$csv_file = $_FILES[$this->option_name . '_upload'];
+			// Check for errors in file upload
+			if ($csv_file['error'] !== UPLOAD_ERR_OK) {
+				echo '<p>File upload failed. Please try again.</p>';
+				return;
+			}
 
 			// Read CSV data
 			try {
-				$csv_data = array_map('str_getcsv', file($csv_file['tmp_name'], FILE_SKIP_EMPTY_LINES));
+				$csv_data = array_map(function($v){return str_getcsv($v, "\t");}, file($csv_file['tmp_name'], FILE_SKIP_EMPTY_LINES));
 			} catch (Exception $e) {
 				// Handle the exception here (e.g., log the error or display a message)
 				error_log('Database error: ' . $e->getMessage());
 			}
 
-			// Get column headers
-			//$headers = array_shift($csv_data);
-
-			// Insert data into the CSV table
-			if ($this->insert_csv_data($csv_data, $selected_month)) {
+			$result = $this->insert_csv_data($csv_data, $selected_month);
+			if ($result) {
+				echo '<p ' . var_dump($result) . '</p>';
 				echo '<p style="color: green;">CSV file uploaded and data inserted into the table.</p>';
 			} else {
 				echo '<p style="color: red;">CSV upload error.</p>';
 			}
-		} else {
-			echo '<p style="color: yellow;">Informe o mês e o respectivo arquivo CSV.</p>';
-		}
-		?>
-<?php
+			echo '<p style="color: black;">OK</p>';
+		} 
 	}
 
 	/**
@@ -341,8 +328,6 @@ class Outdated_Notice_Admin
 			} catch (Exception $e) {
 				// Handle the exception here (e.g., log the error or display a message)
 				error_log('Database error: ' . $e->getMessage());
-				// You can also display an error message if needed
-				//wp_die('Error creating table: ' . $e->getMessage());
 			}
 		}
 	}

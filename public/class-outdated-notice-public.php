@@ -102,42 +102,126 @@ class Outdated_Notice_Public {
 
 	public function the_content( $post_content ) {
 
-		if ( is_main_query() && is_singular('post') ) {
+		if ( is_main_query()) {
+// (0) Página do Contra Cheque
+// (1)  (?)
+// (2)  Código do Colaborador
+// (3)  Nome do Colaborador
+// (4)  Número da Conta Corrente
+// (5)  Dígito da Conta Corrente
+// (6)  (?)
+// (7)  Nome da Empresa
+// (8)  CPF do Colaborador
+// (9)  CNPJ da Empresa
+// (10) (?)
+// (11) Cargo do Colaborador
+// (12) CBO
+// (13) CC
+// (14) (?)
+// (15) (?)
+// (16) Depto
+// (17) (?)
+// (18) (?)
+// (19) Data Admissão
+// (20) DESCRIÇÃO
+// (21) (?)
+// (22) Código da Descrição
+// (23) Valor de Referência
+// (24) Valor do Vencimento ou Desconto
+// (25) Define se é Vencimento (P) ou Desconto (D)
+// (26) (?)
+// (27) Número da Agência
+// (28) Dígito da Agência
+// (29) Salário Base
+// (30) Sal. Contr. INSS
+// (31) Base Cálculo IRRF
+// (32) (?)
+// (33) Base Cálc. FGTS
+// (34) F.G.T.S. do Mês
+// (35) Faixa IRRF
+// (36) (?)
+// (37) (?)
+// (38) Nome do Banco com Código
+// (39) Cargo do Colaborador
+// (40) (?)
+// (41) Data C. Conta
+// (42) Data de Nascimento do Colaborador
+// (43) (?)
+// (44) (?)
+// (45) (?)
+// (46) (?)
+// (47) (?)
+// (48) Horas de Referência
+// (49) (?)
+// (50) (?)
+// (51) (?)
+// (52) (?)
+// (53) (?)
+// (54) (?)
+// (55) (?)
+// (56) Data de Referência
 			$position  = get_option( 'outdated_notice_position', 'before' );
-			$days      = (int) get_option( 'outdated_notice_day', 0 );
+			$days      = (int) get_option( 'outdated_notice_month', 0 );
 			$date_now  = new DateTime( current_time('mysql') );
-			$date_old  = new DateTime( get_the_modified_time('Y-m-d H:i:s') );
-			$date_diff = $date_old->diff( $date_now );
-
-			if ( $date_diff->days > $days ) {
-				$class = 'is-outdated';
-			} else {
-				$class = 'is-fresh';
-			}
-
-			// Filter the text
-			$notice = sprintf(
-						_n(
-							'This post is last updated %s day ago.',
-							'This post is last updated %s days ago.',
-							$date_diff->days,
-							'outdated-notice'
-						),
-						$date_diff->days
-					);
 
 			// Add the class
 			$notice = '<div class="outdated-notice %s">' . $notice . '</div>';
-			$notice = sprintf( $notice, $class );
-
-			if ( 'after' == $position ) {
-				$post_content .= $notice;
-			} else {
-				$post_content = $notice . $post_content;
-			}
 		}
 
         return $post_content;
 	}
+	// Function to download table data as PDF with field_4 filter
+function download_table_data_as_pdf($filter_value) {
+    global $wpdb;
+
+    // Fetch data from the database based on the filter
+    $table_name = $wpdb->prefix . 'your_table_name'; // Replace with your table name
+    $query = $wpdb->prepare("SELECT * FROM $table_name WHERE field_9 = %s", $filter_value);
+    $results = $wpdb->get_results($query);
+
+    // Include the TCPDF library
+	//require_once get_template_directory() . ‘/dompdf/autoload.inc.php’;
+	//use Dompdf\Dompdf;
+    require_once('tcpdf/tcpdf.php');
+
+    // Create new PDF document
+    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+
+    // Set document information
+    $pdf->SetCreator('marcoslkz');
+    $pdf->SetAuthor('marcoslkz');
+    $pdf->SetTitle('Contracheque');
+    $pdf->SetSubject('Contracheque');
+
+    // Add a page
+    $pdf->AddPage();
+
+    // Set some content to display (table data)
+    $html = '<h1>' . $results[1]['field_8'] . '</h1>';
+    $html .= '<table border="1">';
+    $html .= '<tr><th>ID</th><th>Field 1</th><th>Field 2</th><th>Field 3</th><th>Field 4</th></tr>';
+    
+    foreach ($results as $row) {
+        $html .= '<tr>';
+        $html .= '<td>' . $row['id'] . '</td>';
+        $html .= '<td>' . $row['field_1'] . '</td>';
+        $html .= '<td>' . $row['field_2'] . '</td>';
+        $html .= '<td>' . $row['field_3'] . '</td>';
+        $html .= '<td>' . $row['field_4'] . '</td>';
+        $html .= '</tr>';
+    }
+    
+    $html .= '</table>';
+
+    // Output HTML content to PDF
+    $pdf->writeHTML($html, true, false, true, false, '');
+
+    // Set the file name for the PDF download
+    $file_name = 'table_data.pdf';
+
+    // Output PDF as a download file
+    $pdf->Output($file_name, 'D');
+}
+
 
 }
