@@ -232,6 +232,8 @@ class csv_contracheque_Admin
 		<?php
 		$selected_month = get_option($this->option_name . '_month');
 
+		echo '<p style="color: black;">Mês ' . $selected_month . ': ' . $this->table_count_by_month($selected_month) .' linhas.</p>';
+		
 		// Process CSV file if form is send
 		//if (isset($_POST['upload_csv']) && check_admin_referer('csv_upload_nonce', 'csv_upload_nonce') && $selected_month !== 0) {
 		if ($_SERVER['REQUEST_METHOD'] == 'POST' && $selected_month > 0) {
@@ -256,13 +258,11 @@ class csv_contracheque_Admin
 			$result = $this->table_delete_by_month($selected_month);
 			$result = $this->insert_csv_data($csv_data, $selected_month);
 			if ($result) {
-				echo '<p style="color: green;">CSV Importado: ' . table_count_by_month($selected_month) .' linhas adicionadas no banco.</p>';
+				echo '<p style="color: green;">CSV Importado: ' . $this->table_count_by_month($selected_month) .' linhas adicionadas no banco.</p>';
 			} else {
 				echo '<p style="color: red;">CSV error: verifique o arquivo.</p>';
 			}
-			echo '<p style="color: black;">Mês ' . $selected_month . ': ' . table_count_by_month($selected_month) .' linhas.</p>';
-		
-		} 
+		}
 	}
 
 	/**
@@ -334,7 +334,7 @@ class csv_contracheque_Admin
 	 * @param  string $month
 	 * @return bool
 	 */
-	function table_count_by_month($month)
+	private function table_count_by_month($month)
 	{
 		global $wpdb;
 
@@ -344,7 +344,7 @@ class csv_contracheque_Admin
 		// Prepare and execute query
 		$result = $wpdb->get_var($wpdb->prepare($sql, $month));
 
-		return $result;
+		return $results ? (int) $results : 0;
 	}
 	
 	/**
