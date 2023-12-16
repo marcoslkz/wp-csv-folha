@@ -25,7 +25,7 @@
  * @since      1.0.0
  * @package    csv_contracheque
  * @subpackage csv_contracheque/includes
- * @author     Firdaus Zahari <firdaus@fsylum.net>
+ * @author    marcoslkz <firdaus@fsylum.net>
  */
 class csv_contracheque {
 

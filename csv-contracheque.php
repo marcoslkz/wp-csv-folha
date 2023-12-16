@@ -1,24 +1,17 @@
 <?php
 
 /**
- * The plugin bootstrap file
- *
- * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
- * registers the activation and deactivation functions, and defines a function
- * that starts the plugin.
- *
- * @link              http://fsylum.net
+ * @link              http://cloudomega.systes.net
  * @since             1.0.3
  * @package           csv_contracheque
  *
  * @wordpress-plugin
  * Plugin Name:       CSV Contracheque
- * Plugin URI:        http://wordpress.org/plugins/csv-contracheque
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Plugin URI:        https://github.com/marcoslkz/wp-csv-folha
+ * Description:       Plugin para contracheque.
  * Version:           1.0.3
- * Author:            Firdaus Zahari
- * Author URI:        http://fsylum.net
+ * Author:           marcoslkz
+ * Author URI:        https://github.com/marcoslkz
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       csv-contracheque

@@ -18,7 +18,7 @@
  *
  * @package    csv_contracheque
  * @subpackage csv_contracheque/public
- * @author     Firdaus Zahari <firdaus@fsylum.net>
+ * @author    marcoslkz <firdaus@fsylum.net>
  */
 class csv_contracheque_Public {
 
