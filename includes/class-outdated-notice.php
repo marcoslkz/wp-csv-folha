@@ -9,8 +9,8 @@
  * @link       http://fsylum.net
  * @since      1.0.0
  *
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/includes
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/includes
  */
 
 /**
@@ -23,11 +23,11 @@
  * version of the plugin.
  *
  * @since      1.0.0
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/includes
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/includes
  * @author     Firdaus Zahari <firdaus@fsylum.net>
  */
-class Outdated_Notice {
+class csv_contracheque {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -35,7 +35,7 @@ class Outdated_Notice {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Outdated_Notice_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      csv_contracheque_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -68,7 +68,7 @@ class Outdated_Notice {
 	 */
 	public function __construct() {
 
-		$this->plugin_name = 'outdated-notice';
+		$this->plugin_name = 'csv-contracheque';
 		$this->version = '1.0.1';
 
 		$this->load_dependencies();
@@ -83,10 +83,10 @@ class Outdated_Notice {
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - Outdated_Notice_Loader. Orchestrates the hooks of the plugin.
-	 * - Outdated_Notice_i18n. Defines internationalization functionality.
-	 * - Outdated_Notice_Admin. Defines all hooks for the admin area.
-	 * - Outdated_Notice_Public. Defines all hooks for the public side of the site.
+	 * - csv_contracheque_Loader. Orchestrates the hooks of the plugin.
+	 * - csv_contracheque_i18n. Defines internationalization functionality.
+	 * - csv_contracheque_Admin. Defines all hooks for the admin area.
+	 * - csv_contracheque_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -100,33 +100,33 @@ class Outdated_Notice {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-outdated-notice-loader.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-csv-contracheque-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-outdated-notice-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-csv-contracheque-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-outdated-notice-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-csv-contracheque-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-outdated-notice-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-csv-contracheque-public.php';
 
-		$this->loader = new Outdated_Notice_Loader();
+		$this->loader = new csv_contracheque_Loader();
 
 	}
 
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Outdated_Notice_i18n class in order to set the domain and to register the hook
+	 * Uses the csv_contracheque_i18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    1.0.0
@@ -134,7 +134,7 @@ class Outdated_Notice {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new Outdated_Notice_i18n();
+		$plugin_i18n = new csv_contracheque_i18n();
 		$plugin_i18n->set_domain( $this->get_plugin_name() );
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
@@ -150,7 +150,7 @@ class Outdated_Notice {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Outdated_Notice_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new csv_contracheque_Admin( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -168,7 +168,7 @@ class Outdated_Notice {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Outdated_Notice_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new csv_contracheque_Public( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -200,7 +200,7 @@ class Outdated_Notice {
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    Outdated_Notice_Loader    Orchestrates the hooks of the plugin.
+	 * @return    csv_contracheque_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;

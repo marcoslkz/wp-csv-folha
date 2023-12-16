@@ -6,8 +6,8 @@
  * @link       http://fsylum.net
  * @since      1.0.0
  *
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/admin
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/admin
  */
 
 /**
@@ -16,11 +16,11 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the admin-specific stylesheet and JavaScript.
  *
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/admin
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/admin
  * @author     Firdaus Zahari <firdaus@fsylum.net>
  */
-class Outdated_Notice_Admin
+class csv_contracheque_Admin
 {
 	private $table_name;
 
@@ -40,7 +40,7 @@ class Outdated_Notice_Admin
 	 * @access 	private
 	 * @var  	string 		$option_name 	Option name of this plugin
 	 */
-	private $option_name = 'outdated_notice';
+	private $option_name = 'csv_contracheque';
 
 	/**
 	 * The version of this plugin.
@@ -80,15 +80,15 @@ class Outdated_Notice_Admin
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Outdated_Notice_Loader as all of the hooks are defined
+		 * defined in csv_contracheque_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Outdated_Notice_Loader will then create the relationship
+		 * The csv_contracheque_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/outdated-notice-admin.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/csv-contracheque-admin.css', array(), $this->version, 'all');
 	}
 
 	/**
@@ -103,15 +103,15 @@ class Outdated_Notice_Admin
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Outdated_Notice_Loader as all of the hooks are defined
+		 * defined in csv_contracheque_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Outdated_Notice_Loader will then create the relationship
+		 * The csv_contracheque_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/outdated-notice-admin.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/csv-contracheque-admin.js', array('jquery'), $this->version, false);
 	}
 
 	/**
@@ -123,8 +123,8 @@ class Outdated_Notice_Admin
 	{
 
 		$this->plugin_screen_hook_suffix = add_options_page(
-			__('Outdated Notice Settings', 'outdated-notice'),
-			__('Outdated Notice', 'outdated-notice'),
+			__('CSV Contracheque Settings', 'csv-contracheque'),
+			__('CSV Contracheque', 'csv-contracheque'),
 			'manage_options',
 			$this->plugin_name,
 			array($this, 'display_options_page')
@@ -138,7 +138,7 @@ class Outdated_Notice_Admin
 	 */
 	public function display_options_page()
 	{
-		include_once 'partials/outdated-notice-admin-display.php';
+		include_once 'partials/csv-contracheque-admin-display.php';
 	}
 
 	/**
@@ -151,14 +151,14 @@ class Outdated_Notice_Admin
 
 		add_settings_section(
 			$this->option_name . '_general',
-			__('General', 'outdated-notice'),
+			__('General', 'csv-contracheque'),
 			array($this, $this->option_name . '_general_cb'),
 			$this->plugin_name
 		);
 
 		add_settings_field(
 			$this->option_name . '_position',
-			__('Text position', 'outdated-notice'),
+			__('Text position', 'csv-contracheque'),
 			array($this, $this->option_name . '_position_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
@@ -167,7 +167,7 @@ class Outdated_Notice_Admin
 
 		add_settings_field(
 			$this->option_name . '_month',
-			__('Informe o mês do arquivo:', 'outdated-notice'),
+			__('Informe o mês do arquivo:', 'csv-contracheque'),
 			array($this, $this->option_name . '_month_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
@@ -176,7 +176,7 @@ class Outdated_Notice_Admin
 
 		add_settings_field(
 			$this->option_name . '_upload',
-			__('CSV upload', 'outdated-notice'),
+			__('CSV upload', 'csv-contracheque'),
 			array($this, $this->option_name . '_csv_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
@@ -194,11 +194,11 @@ class Outdated_Notice_Admin
 	 *
 	 * @since  1.0.0
 	 */
-	public function outdated_notice_general_cb()
+	public function csv_contracheque_general_cb()
 	{
 		global $wpdb;
 
-		echo '<p>' . __('CSV Folha', 'outdated-notice') . '</p>';
+		echo '<p>' . __('CSV Folha', 'csv-contracheque') . '</p>';
 	}
 
 	/**
@@ -206,7 +206,7 @@ class Outdated_Notice_Admin
 	 *
 	 * @since  1.0.0
 	 */
-	public function outdated_notice_position_cb()
+	public function csv_contracheque_position_cb()
 	{
 		global $wpdb;
 		$position = get_option($this->option_name . '_position');
@@ -214,12 +214,12 @@ class Outdated_Notice_Admin
 		<fieldset>
 			<label>
 				<input type="radio" name="<?php echo $this->option_name . '_position' ?>" id="<?php echo $this->option_name . '_position' ?>" value="before" <?php checked($position, 'before'); ?>>
-				<?php _e(" linhas.", 'outdated-notice'); ?>
+				<?php _e(" linhas.", 'csv-contracheque'); ?>
 			</label>
 			<br>
 			<label>
 				<input type="radio" name="<?php echo $this->option_name . '_position' ?>" value="after" <?php checked($position, 'after'); ?>>
-				<?php _e('After the content', 'outdated-notice'); ?>
+				<?php _e('After the content', 'csv-contracheque'); ?>
 			</label>
 		</fieldset>
 	<?php
@@ -230,15 +230,15 @@ class Outdated_Notice_Admin
 	 *
 	 * @since  1.0.0
 	 */
-	public function outdated_notice_month_cb()
+	public function csv_contracheque_month_cb()
 	{
 		$selected_month = get_option($this->option_name . '_month');
 	?>
 		<!-- HTML markup for the "Escolha o mês" option field -->
 		<fieldset>
-			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('*', 'outdated-notice'); ?></label>
+			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('*', 'csv-contracheque'); ?></label>
 			<select name="<?php echo $this->option_name . '_month'; ?>" id="<?php echo $this->option_name . '_month'; ?>" required>
-				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o mês!', 'outdated-notice'); ?></option>
+				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o mês!', 'csv-contracheque'); ?></option>
 				<?php
 				// Generate options for months
 				for ($i = 1; $i <= 12; $i++) {
@@ -248,7 +248,7 @@ class Outdated_Notice_Admin
 			</select>
 		</fieldset>
 	<?php
-		#echo '<input type="text" name="' . $this->option_name . '_month' . '" id="' . $this->option_name . '_month' . '" value="' . $month . '"> ' . __('', 'outdated-notice');
+		#echo '<input type="text" name="' . $this->option_name . '_month' . '" id="' . $this->option_name . '_month' . '" value="' . $month . '"> ' . __('', 'csv-contracheque');
 	}
 
 	/**
@@ -258,7 +258,7 @@ class Outdated_Notice_Admin
 	 * @since  1.0.0
 	 * @return string           Sanitized value
 	 */
-	public function outdated_notice_sanitize_position($position)
+	public function csv_contracheque_sanitize_position($position)
 	{
 		if (in_array($position, array('before', 'after'), true)) {
 			return $position;
@@ -270,7 +270,7 @@ class Outdated_Notice_Admin
 	 *
 	 * @since  1.0.0
 	 */
-	public function outdated_notice_csv_cb()
+	public function csv_contracheque_csv_cb()
 	{
 		?>
 		<fieldset>
@@ -279,6 +279,7 @@ class Outdated_Notice_Admin
 		</fieldset>
 		<?php
 		$selected_month = get_option($this->option_name . '_month');
+
 		// Process CSV file if form is send
 		//if (isset($_POST['upload_csv']) && check_admin_referer('csv_upload_nonce', 'csv_upload_nonce') && $selected_month !== 0) {
 		if ($_SERVER['REQUEST_METHOD'] == 'POST' && $selected_month > 0) {
@@ -291,20 +292,20 @@ class Outdated_Notice_Admin
 
 			// Read CSV data
 			try {
-				$csv_data = array_map(function($v){return str_getcsv($v, "\t");}, file($csv_file['tmp_name'], FILE_SKIP_EMPTY_LINES));
+				$file_path=$csv_file['tmp_name'];
+				$csv_data = array_map(function($v){return str_getcsv($v, "\t");}, file($file_path, FILE_SKIP_EMPTY_LINES));
+				$csv_data = mb_convert_encoding($csv_data, 'UTF-8', 'ISO-8859-1');
 			} catch (Exception $e) {
 				// Handle the exception here (e.g., log the error or display a message)
-				error_log('Database error: ' . $e->getMessage());
+				echo '<p>Database error, contact admin: ' . $e->getMessage() . '</p>';
 			}
 
 			$result = $this->insert_csv_data($csv_data, $selected_month);
 			if ($result) {
-				echo '<p ' . var_dump($result) . '</p>';
-				echo '<p style="color: green;">CSV file uploaded and data inserted into the table.</p>';
+				echo '<p style="color: green;">CSV Importado: ' . $wpdb->get_var("select count(*) from '$this->table_name ' where mounth='$selected_month'") .' linhas adicionadas no banco.</p>';
 			} else {
-				echo '<p style="color: red;">CSV upload error.</p>';
+				echo '<p style="color: red;">CSV error: verifique o arquivo.</p>';
 			}
-			echo '<p style="color: black;">OK</p>';
 		} 
 	}
 

@@ -22,7 +22,7 @@
  * @link       http://fsylum.net
  * @since      1.0.0
  *
- * @package    Outdated_Notice
+ * @package    csv_contracheque
  */
 
 // If uninstall not called from WordPress, then exit.

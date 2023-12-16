@@ -8,8 +8,8 @@
  * @link       http://fsylum.net
  * @since      1.0.0
  *
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/admin/partials
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/admin/partials
  */
 ?>
 

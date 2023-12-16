@@ -6,8 +6,8 @@
  * @link       http://fsylum.net
  * @since      1.0.0
  *
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/includes
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/includes
  */
 
 /**
@@ -17,11 +17,11 @@
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    Outdated_Notice
- * @subpackage Outdated_Notice/includes
+ * @package    csv_contracheque
+ * @subpackage csv_contracheque/includes
  * @author     Firdaus Zahari <firdaus@fsylum.net>
  */
-class Outdated_Notice_Loader {
+class csv_contracheque_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

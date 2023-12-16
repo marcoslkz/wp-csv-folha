@@ -10,18 +10,18 @@
  *
  * @link              http://fsylum.net
  * @since             1.0.3
- * @package           Outdated_Notice
+ * @package           csv_contracheque
  *
  * @wordpress-plugin
- * Plugin Name:       Outdated Notice
- * Plugin URI:        http://wordpress.org/plugins/outdated-notice
+ * Plugin Name:       CSV Contracheque
+ * Plugin URI:        http://wordpress.org/plugins/csv-contracheque
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
  * Version:           1.0.3
  * Author:            Firdaus Zahari
  * Author URI:        http://fsylum.net
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       outdated-notice
+ * Text Domain:       csv-contracheque
  * Domain Path:       /languages
  */
 
@@ -32,30 +32,30 @@ if ( ! defined( 'WPINC' ) ) {
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-outdated-notice-activator.php
+ * This action is documented in includes/class-csv-contracheque-activator.php
  */
-function activate_outdated_notice() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-outdated-notice-activator.php';
-	Outdated_Notice_Activator::activate();
+function activate_csv_contracheque() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-csv-contracheque-activator.php';
+	csv_contracheque_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-outdated-notice-deactivator.php
+ * This action is documented in includes/class-csv-contracheque-deactivator.php
  */
-function deactivate_outdated_notice() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-outdated-notice-deactivator.php';
-	Outdated_Notice_Deactivator::deactivate();
+function deactivate_csv_contracheque() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-csv-contracheque-deactivator.php';
+	csv_contracheque_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_outdated_notice' );
-register_deactivation_hook( __FILE__, 'deactivate_outdated_notice' );
+register_activation_hook( __FILE__, 'activate_csv_contracheque' );
+register_deactivation_hook( __FILE__, 'deactivate_csv_contracheque' );
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-outdated-notice.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-csv-contracheque.php';
 
 /**
  * Begins execution of the plugin.
@@ -66,10 +66,10 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-outdated-notice.php';
  *
  * @since    1.0.0
  */
-function run_outdated_notice() {
+function run_csv_contracheque() {
 
-	$plugin = new Outdated_Notice();
+	$plugin = new csv_contracheque();
 	$plugin->run();
 
 }
-run_outdated_notice();
+run_csv_contracheque();
