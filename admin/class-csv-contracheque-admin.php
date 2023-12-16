@@ -157,15 +157,6 @@ class csv_contracheque_Admin
 		);
 
 		add_settings_field(
-			$this->option_name . '_position',
-			__('Text position', 'csv-contracheque'),
-			array($this, $this->option_name . '_position_cb'),
-			$this->plugin_name,
-			$this->option_name . '_general',
-			array('label_for' => $this->option_name . '_position')
-		);
-
-		add_settings_field(
 			$this->option_name . '_month',
 			__('Informe o mês do arquivo:', 'csv-contracheque'),
 			array($this, $this->option_name . '_month_cb'),
@@ -183,7 +174,6 @@ class csv_contracheque_Admin
 			array('label_for' => $this->option_name . '_upload')
 		);
 
-		register_setting($this->plugin_name, $this->option_name . '_position', array($this, $this->option_name . '_sanitize_position'));
 		register_setting($this->plugin_name, $this->option_name . '_month', 'intval');
 		//register_setting($this->plugin_name, $this->option_name . '_upload');
 
@@ -202,31 +192,7 @@ class csv_contracheque_Admin
 	}
 
 	/**
-	 * Render the radio input field for position option
-	 *
-	 * @since  1.0.0
-	 */
-	public function csv_contracheque_position_cb()
-	{
-		global $wpdb;
-		$position = get_option($this->option_name . '_position');
-?>
-		<fieldset>
-			<label>
-				<input type="radio" name="<?php echo $this->option_name . '_position' ?>" id="<?php echo $this->option_name . '_position' ?>" value="before" <?php checked($position, 'before'); ?>>
-				<?php _e(" linhas.", 'csv-contracheque'); ?>
-			</label>
-			<br>
-			<label>
-				<input type="radio" name="<?php echo $this->option_name . '_position' ?>" value="after" <?php checked($position, 'after'); ?>>
-				<?php _e('After the content', 'csv-contracheque'); ?>
-			</label>
-		</fieldset>
-	<?php
-	}
-
-	/**
-	 * Render the treshold day input for this plugin
+	 * Render the treshold month input for this plugin
 	 *
 	 * @since  1.0.0
 	 */
@@ -300,9 +266,10 @@ class csv_contracheque_Admin
 				echo '<p>Database error, contact admin: ' . $e->getMessage() . '</p>';
 			}
 
+			$result = $this->table_delete_by_month($selected_month);
 			$result = $this->insert_csv_data($csv_data, $selected_month);
 			if ($result) {
-				echo '<p style="color: green;">CSV Importado: ' . $wpdb->get_var("select count(*) from '$this->table_name ' where mounth='$selected_month'") .' linhas adicionadas no banco.</p>';
+				echo '<p style="color: green;">CSV Importado: ' . table_count_by_month($selected_month) .' linhas adicionadas no banco.</p>';
 			} else {
 				echo '<p style="color: red;">CSV error: verifique o arquivo.</p>';
 			}
@@ -373,13 +340,33 @@ class csv_contracheque_Admin
 		}
 		return $return;
 	}
+	
+	/**
+	 * Count lines rows based on "month" value in table
+	 *
+	 * @param  string $month
+	 * @return bool
+	 */
+	function table_count_by_month($month)
+	{
+		global $wpdb;
+
+		// Prepare SQL statement
+		$sql = "SELECT COUNT(*) FROM $this->table_name  WHERE month = %s"; 
+
+		// Prepare and execute query
+		$result = $wpdb->query($wpdb->prepare($sql, $month));
+
+		return $result;
+	}
+	
 	/**
 	 * Delete rows based on "month" value in table
 	 *
 	 * @param  string $month
 	 * @return bool
 	 */
-	function csv_delete_by_month($month)
+	function table_delete_by_month($month)
 	{
 		global $wpdb;
 
