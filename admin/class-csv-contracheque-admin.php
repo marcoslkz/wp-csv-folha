@@ -123,7 +123,7 @@ class csv_contracheque_Admin
 	{
 
 		$this->plugin_screen_hook_suffix = add_options_page(
-			__('CSV Contracheque Settings', 'csv-contracheque'),
+			__('CSV Contracheque Envio', 'csv-contracheque'),
 			__('CSV Contracheque', 'csv-contracheque'),
 			'manage_options',
 			$this->plugin_name,
@@ -218,20 +218,6 @@ class csv_contracheque_Admin
 	}
 
 	/**
-	 * Sanitize the text position value before being saved to database
-	 *
-	 * @param  string $position $_POST value
-	 * @since  1.0.0
-	 * @return string           Sanitized value
-	 */
-	public function csv_contracheque_sanitize_position($position)
-	{
-		if (in_array($position, array('before', 'after'), true)) {
-			return $position;
-		}
-	}
-	###################
-	/**
 	 * Render the CSV upload field and process the uploaded file
 	 *
 	 * @since  1.0.0
@@ -241,7 +227,7 @@ class csv_contracheque_Admin
 		?>
 		<fieldset>
 		<label>
-			<input type="file" name="<?php echo $this->option_name . '_upload'; ?>" id="<?php echo $this->option_name . '_upload'; ?>" accept=".csv, .txt">
+			<input type="file" name="<?php echo $this->option_name . '_upload'; ?>" id="<?php echo $this->option_name . '_upload'; ?>" accept=".csv, .txt" required>
 		</fieldset>
 		<?php
 		$selected_month = get_option($this->option_name . '_month');
@@ -264,6 +250,7 @@ class csv_contracheque_Admin
 			} catch (Exception $e) {
 				// Handle the exception here (e.g., log the error or display a message)
 				echo '<p>Database error, contact admin: ' . $e->getMessage() . '</p>';
+				wp_die('Error creating table: ' . $e->getMessage());
 			}
 
 			$result = $this->table_delete_by_month($selected_month);
@@ -273,6 +260,8 @@ class csv_contracheque_Admin
 			} else {
 				echo '<p style="color: red;">CSV error: verifique o arquivo.</p>';
 			}
+			echo '<p style="color: black;">Mês ' . $selected_month . ': ' . table_count_by_month($selected_month) .' linhas.</p>';
+		
 		} 
 	}
 
@@ -334,8 +323,6 @@ class csv_contracheque_Admin
 			} catch (Exception $e) {
 				// Handle the exception here (e.g., log the error or display a message)
 				error_log('Database error: ' . $e->getMessage());
-				// You can also display an error message if needed
-				wp_die('Error creating table: ' . $e->getMessage());
 			}
 		}
 		return $return;
@@ -355,7 +342,7 @@ class csv_contracheque_Admin
 		$sql = "SELECT COUNT(*) FROM $this->table_name  WHERE month = %s"; 
 
 		// Prepare and execute query
-		$result = $wpdb->query($wpdb->prepare($sql, $month));
+		$result = $wpdb->get_var($wpdb->prepare($sql, $month));
 
 		return $result;
 	}
