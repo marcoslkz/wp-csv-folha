@@ -172,7 +172,12 @@ class csv_contracheque {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-		$this->loader->add_action( 'the_content', $plugin_public, 'the_content' );
+		//$this->loader->add_action( 'the_content', $plugin_public, 'the_content' );
+		//$this->loader->add_action( 'init', $plugin_public, 'page_user' );
+		$this->loader->add_shortcode('contracheque_form_month', $plugin_public, 'contracheque_form_month_shortcode');
+		$this->loader->add_action('wp_ajax_contracheque_get_data', $plugin_public, 'contracheque_get_data_callback');
+		$this->loader->add_action('wp_ajax_nopriv_contracheque_get_data', $plugin_public, 'contracheque_get_data_callback'); // For non-logged-in users
+		
 
 	}
 

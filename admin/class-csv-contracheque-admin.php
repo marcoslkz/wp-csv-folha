@@ -167,7 +167,7 @@ class csv_contracheque_Admin
 
 		add_settings_field(
 			$this->option_name . '_upload',
-			__('CSV upload', 'csv-contracheque'),
+			__('Base de dados: ', 'csv-contracheque'),
 			array($this, $this->option_name . '_csv_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
@@ -188,7 +188,7 @@ class csv_contracheque_Admin
 	{
 		global $wpdb;
 
-		echo '<p>' . __('CSV Folha', 'csv-contracheque') . '</p>';
+		echo '<p>' . __('Primeiro, escolha o mês e salve, em seguida envie o arquivo.', 'csv-contracheque') . '</p>';
 	}
 
 	/**
@@ -202,8 +202,8 @@ class csv_contracheque_Admin
 	?>
 		<!-- HTML markup for the "Escolha o mês" option field -->
 		<fieldset>
-			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('*', 'csv-contracheque'); ?></label>
-			<select name="<?php echo $this->option_name . '_month'; ?>" id="<?php echo $this->option_name . '_month'; ?>" required>
+			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('', 'csv-contracheque'); ?></label>
+			<select name="<?php echo $this->option_name . '_month'; ?>" id="<?php echo $this->option_name . '_month'; ?>">
 				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o mês!', 'csv-contracheque'); ?></option>
 				<?php
 				// Generate options for months
@@ -225,10 +225,6 @@ class csv_contracheque_Admin
 	public function csv_contracheque_csv_cb()
 	{
 		?>
-		<fieldset>
-		<label>
-			<input type="file" name="<?php echo $this->option_name . '_upload'; ?>" id="<?php echo $this->option_name . '_upload'; ?>" accept=".csv, .txt" required>
-		</fieldset>
 		<?php
 		$selected_month = get_option($this->option_name . '_month');
 
@@ -297,9 +293,9 @@ class csv_contracheque_Admin
 		$columns = array();
 
 		for ($i = 1; $i <= 57; $i++) {
-			$columns[] = "field_$i TEXT NOT NULL";
+			$columns[] = "field_$i VARCHAR(255)";
 		}
-		$columns[] = "month INT NOT NULL DEFAULT 0";
+		$columns[] = "month INT";
 
 		return implode(", ", $columns);
 	}
@@ -344,7 +340,20 @@ class csv_contracheque_Admin
 		// Prepare and execute query
 		$result = $wpdb->get_var($wpdb->prepare($sql, $month));
 
-		return $results ? (int) $results : 0;
+		return $result ? (int) $result : 0;
+	}
+	
+	private function table_get_month_and_years($cpf, $month, $year)
+	{
+		global $wpdb;
+
+		// Prepare SQL statement
+		$sql = "SELECT COUNT(*) FROM $this->table_name  WHERE field_10 = %s AND month = %s AND field_11 = %s"; 
+
+		// Prepare and execute query
+		$result = $wpdb->get_var($wpdb->prepare($sql, $cpf, $month, $year));
+
+		return $result ? (int) $result : 0;
 	}
 	
 	/**

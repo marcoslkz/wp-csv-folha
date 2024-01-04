@@ -1,32 +1,71 @@
-(function( $ ) {
-	'use strict';
+jQuery(document).ready(function ($) {
+  $('#contracheque_month_form').submit(function (e) {
+    e.preventDefault();
+    var selectedMonth = $('#selected_month').val();
+    var download_pdf = $('#download_pdf').val();
 
-	/**
-	 * All of the code for your public-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note that this assume you're going to use jQuery, so it prepares
-	 * the $ function reference to be used within the scope of this
-	 * function.
-	 *
-	 * From here, you're able to define handlers for when the DOM is
-	 * ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * Or when the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and so on.
-	 *
-	 * Remember that ideally, we should not attach any more than a single DOM-ready or window-load handler
-	 * for any particular page. Though other scripts in WordPress core, other plugins, and other themes may
-	 * be doing this, we should try to minimize doing that in our own work.
-	 */
+    var downloadPdfValue = parseInt($('#download_pdf').val());
+    if (downloadPdfValue > 0) {
+      $.ajax({
+        url: ajax_obj.ajax_url, // Use the AJAX URL passed from wp_localize_script
 
-})( jQuery );
+        type: 'POST',
+        data: {
+          action: 'contracheque_get_data',
+          cpf: '00',
+          selectedMonth: selectedMonth,
+          download_pdf: 0,
+        },
+        success: function (response) {
+          downloadFile(response, selectedMonth);
+        },
+        error: function (xhr, status, error) {
+          console.error(xhr.responseText);
+          // Handle errors here
+        }
+      });
+    } else {
+      $.ajax({
+        url: ajax_obj.ajax_url, // Use the AJAX URL passed from wp_localize_script
+        type: 'POST',
+        data: {
+          action: 'contracheque_get_data',
+          selected_month: selectedMonth,
+          download_pdf: download_pdf,
+        },
+        success: function (response) {
+          // Update the table with the response
+          $('#contracheque_result_table').html(response);
+        },
+        error: function (xhr, status, error) {
+          console.error(xhr.responseText);
+          // Handle errors here
+        }
+      });
+    }
+  });
+
+  function downloadFile(resp, month) {
+    // create a download anchor tag
+    var downloadLink = document.createElement('a');
+    //downloadLink.target   = '_blank';
+    downloadLink.download = 'contracheque.pdf';
+    // convert downloaded data to a Blob
+    var blob = new Blob([resp], { type: 'text/plain' });
+    var URL = window.URL || window.webkitURL;
+    var downloadUrl = URL.createObjectURL(blob.data);
+
+    // set object URL as the anchor's href
+    downloadLink.href = downloadUrl;
+
+    // append the anchor to document body
+    document.body.append(downloadLink);
+
+    // fire a click event on the anchor
+    downloadLink.click();
+
+    // cleanup: remove element and revoke object URL
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(downloadUrl);
+  }
+});

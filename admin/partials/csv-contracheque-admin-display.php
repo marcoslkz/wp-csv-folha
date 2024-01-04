@@ -16,15 +16,22 @@
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 
 <div class="wrap">
-    <h2><?php echo esc_html( get_admin_page_title() ); ?></h2>
-    <form action='<?= $_SERVER['REQUEST_URI']; ?>'  method="post" enctype="multipart/form-data">
+    <h2><?php echo esc_html(get_admin_page_title()); ?></h2>
+    <form action='options.php' method="post" enctype="multipart/form-data">
         <?php
-            settings_fields( $this->plugin_name );
-            do_settings_sections( $this->plugin_name );
-            //submit_button();
+        settings_fields($this->plugin_name);
+        do_settings_sections($this->plugin_name);
+        submit_button();
         ?>
+    </form>
+    <form action='' method="post" enctype="multipart/form-data">
         <p class="submit">
-            <input type="submit" name="upload" id="upload" class="button button-primary" value="Enviar Arquivo">
+        <fieldset>
+            <label><?php _e('Envie o arquivo do mês: ', 'csv-contracheque'); ?></label>
+            <input type="file" name="<?php echo $this->option_name . '_upload'; ?>" id="<?php echo $this->option_name . '_upload'; ?>" accept=".csv, .txt">
+        </fieldset>
+        <input type="submit" name="upload" id="upload" class="button button-primary" value="Enviar Arquivo" <?php echo get_option($this->option_name . '_month') > 0 ? '' : 'disabled'; ?>>
+
         </p>
     </form>
 </div>
