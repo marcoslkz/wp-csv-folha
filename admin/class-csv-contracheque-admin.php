@@ -271,7 +271,7 @@ class csv_contracheque_Admin
 		if (!$wpdb->get_var("select 1 from information_schema.tables where table_name='$this->table_name '")) {
 			$charset_collate = $wpdb->get_charset_collate();
 
-			$sql = "CREATE TABLE $this->table_name (id mediumint(9) NOT NULL AUTO_INCREMENT, "
+			$sql = "CREATE TABLE $this->table_name (id mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT, "
 				. $this->generate_field_columns()
 				. ", PRIMARY KEY  (id)) $charset_collate;";
 

@@ -108,10 +108,69 @@ class csv_contracheque_Public
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/csv-contracheque-public.js', array('jquery'), $this->version, true);
 		// Localize the script with the ajaxurl variable
-		wp_localize_script($this->plugin_name, 'ajax_obj',
-            array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'nonce' => 1234 ) );
+		wp_localize_script(
+			$this->plugin_name,
+			'ajax_obj',
+			array('ajax_url' => admin_url('admin-ajax.php'), 'nonce' => 1234)
+		);
+	}
 
-		
+	function get_results_distinct($coluna, $cpf)
+	{
+		$results = 0;
+		global $wpdb;
+		try {
+
+			$query = $wpdb->prepare("SELECT DISTINCT %s FROM %s WHERE field_9 = '%s'", $coluna, $this->table_name, $cpf);
+			$results = $wpdb->get_results($query);
+		} catch (Exception $e) {
+			// Handle the exception
+			$results = 0;
+		}
+		return $results;
+	}
+
+	/**
+	 * Retrieve unique results for a specific query.
+	 *
+	 * @param string $cpf   The CPF value.
+	 * @param int    $month The month value.
+	 *
+	 * @return array Unique results suitable for creating HTML select options.
+	 */
+	function get_unique_results_for_select($cpf)
+	{
+		// Retrieve results
+		$results = $this->get_results_distinct('field_56', $cpf);
+
+		// Transform the results into an array suitable for HTML select options
+		$options = array();
+		foreach ($results as $result) {
+			$options[$result['field_56']] = $result['field_56'];
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Convert a date string to the month.
+	 *
+	 * @param string $dateString The date string (format: "mm/dd/yyyy").
+	 *
+	 * @return int|false The month as an integer (1 to 12), or false on failure.
+	 */
+	function convertDateStringToMonth($dateString)
+	{
+		$timestamp = strtotime($dateString);
+
+		if ($timestamp === false) {
+			// Invalid date string
+			return false;
+		}
+
+		$month = (int)date('m', $timestamp);
+
+		return $month;
 	}
 
 	function get_month_ptbr($month_number)
@@ -204,7 +263,7 @@ class csv_contracheque_Public
 	// (55) (?)
 	// (56) Data de Referência
 	// Function to download table data as PDF with field_4 filter
-	function show_contracheque($cpf, $month)
+	function show_contracheque($cpf, $ref)
 	{
 		global $wpdb;
 		$vencimentos = 0.0;
@@ -215,14 +274,14 @@ class csv_contracheque_Public
 		try {
 
 			// Fetch data from the database based on the filter
-			$query = $wpdb->prepare("SELECT * FROM $this->table_name WHERE field_9 = '%s' and month = %d", $cpf, $month);
+			$query = $wpdb->prepare("SELECT * FROM $this->table_name WHERE field_9 = '%s' and field_56 = %s", $cpf, $ref);
 			$results = $wpdb->get_results($query);
 		} catch (Exception $e) {
 			// Handle the exception
 			return  '<p>Error: ' . $e->getMessage() . '</p>';
 		}
 		if (empty($results)) {
-			return "<p>Sem informações encontradas para o mês: " . $this->get_month_ptbr($month) . " CPF: " . $cpf . ".</p>";
+			return "<p>Sem informações encontradas para o mês: " . $ref . " CPF: " . $cpf . ".</p>";
 		}
 
 		$logo_id = get_theme_mod('custom_logo');
@@ -259,7 +318,7 @@ class csv_contracheque_Public
 			$html .= '<tr><td><br></td><td colspan="3" rowspan="1"></td><td></td><td></td><td></td></tr>';
 		}
 
-		$html .= '<tr><th colspan="5" rowspan="1">TOTAIS: </th><th>' . number_format($vencimentos, 2, ',', '') . '</th><th>' . number_format($descontos, 2, ',', '')  . '</th></tr>';
+		$html .= '<tr><th colspan="5" rowspan="1">TOTAIS: </th><th>' . $this->number_double($vencimentos) . '</th><th>' . $this->number_double($descontos) . '</th></tr>';
 		$html .= '<td colspan="2" rowspan="1">' . esc_html($row->field_39) . '</td><td>Agência: ' . esc_html($row->field_28) . '-' . esc_html($row->field_29) .
 			'</td><td colspan="2" rowspan="1"></td><td  colspan="1" rowspan="2">Valor Líquido: </td><td  colspan="1" rowspan="2">' . bcsub($vencimentos, $descontos, 2) . '</td></tr>';
 		$html .= '<td colspan="2" rowspan="1">CPF: ' . esc_html($row->field_9) . '</td><td></td></tr>';
@@ -292,7 +351,7 @@ class csv_contracheque_Public
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @page { margin: 0in; }
-    body { background-color: blue; padding: 1in; }
+    body { background-color: white; padding: 1in; }
     #wrapper { background-color: yellow; width: 95%; height: 95%; padding: 5%; }
   </style>
 				<title>' . $title . '</title>
@@ -306,20 +365,20 @@ class csv_contracheque_Public
 		return $html;
 	}
 
-	public function generate_contracheque_pdf() //$cpf, $month)
+	public function generate_contracheque_pdf($cpf, $ref)
 	{
-		$month = $_POST['selectedMonth'];
 		// instantiate and use the dompdf class
 		$dompdf = new Dompdf();
-		$dompdf->loadHtml($this->full_html("Contracheque", $this->show_contracheque("0", 7)));
+		$dompdf->loadHtml($this->full_html("Contracheque", $this->show_contracheque($cpf, $ref)));
 
 		// (Optional) Setup the paper size and orientation
-		$dompdf->setPaper('A4', 'landscape');
+		$dompdf->setPaper('A4');
 		$dompdf->render();
 
-		//$dompdf->stream();
-		//$dompdf->stream('contracheque_' .  $this->get_month_ptbr($month) . '.pdf', array('Attachment' => 0));
+		$dompdf->stream();
+		$dompdf->stream('contracheque_' .  $this->get_month_ptbr($this->convertDateStringToMonth($ref)) . '.pdf', array('Attachment' => 0));
 		//$pdf->SetTitle('Contracheque_' . $this->get_month_ptbr($month));
+		wp_die(); // Always include this to terminate the script
 
 		//exit(); // Always include this to terminate the script
 		// Output the generated PDF as a response
@@ -329,26 +388,62 @@ class csv_contracheque_Public
 		echo $pdf_output;
 		exit();
 
-		wp_die(); // Always include this to terminate the script
 		//}
 	}
 
+
+	// Shortcode function
+	function contracheque_form_pdf_shortcode()
+	{
+		// Get the current user object
+		$current_user = wp_get_current_user();
+		$cpf = "";
+		if (!$current_user->exists()) return "<p>Acesso negado.<\p>";
+		else $cpf = esc_html($current_user->user_login);
+
+		// Display a simple form for selecting the month
+		$html = '
+		<form id="contracheque_pdf_form" method="post">
+
+			<label for="selected_month">Escolha o contracheque: </label>
+			<select name="selected_month" id="selected_month">
+			';
+
+		$options = $this->get_unique_results_for_select($cpf);
+		foreach ($options as $value => $label) {
+			$html .= '<option value="' . esc_attr($value) . '">' . esc_html($label) . '</option>';
+		}
+
+		$html .=  '
+			</select>
+			<input type="submit" value="Exibir Contracheque">
+			';
+
+		// Generate HTML for the table
+		$selected_month = isset($_POST['selected_month']) ? (int)$_POST['selected_month'] : 0;
+
+		if ($selected_month > 0) {
+			$this->generate_contracheque_pdf($cpf, $selected_month);
+		}
+		return $html;
+	}
 	// Shortcode function
 	function contracheque_form_month_shortcode()
 	{
 
 		ob_start(); // Start output buffering
+		
+		$current_user = wp_get_current_user();
 ?>
 		<form id="contracheque_month_form" method="post">
 
-			<label for="selected_month">Escolha o mês: </label>
+			<label for="selected_month">Escolha o contracheque: </label>
 			<select name="selected_month" id="selected_month">
 				<!-- Options for months -->
 				<?php
-
-				// Generate options for months
-				for ($i = 1; $i <= 12; $i++) {
-					echo '<option value="' . $i . '">' . $this->get_month_ptbr($i) . '</option>';
+				$options = $this->get_unique_results_for_select(esc_html($current_user->user_login));
+				foreach ($options as $value => $label) {
+					echo '<option value="' . esc_attr($value) . '">' . esc_html($label) . '</option>';
 				}
 				?>
 			</select>

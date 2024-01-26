@@ -178,6 +178,7 @@ class csv_contracheque {
 		$this->loader->add_action('wp_ajax_contracheque_get_data', $plugin_public, 'contracheque_get_data_callback');
 		$this->loader->add_action('wp_ajax_nopriv_contracheque_get_data', $plugin_public, 'contracheque_get_data_callback'); // For non-logged-in users
 		
+		$this->loader->add_shortcode('contracheque_form_pdf', $plugin_public, 'contracheque_form_pdf_shortcode');
 
 	}
 
