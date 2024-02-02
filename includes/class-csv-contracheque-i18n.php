@@ -22,7 +22,7 @@
  * @since      1.0.0
  * @package    csv_contracheque
  * @subpackage csv_contracheque/includes
- * @author    marcoslkz <firdaus@fsylum.net>
+ * @author    marcoslkz <mail>
  */
 class csv_contracheque_i18n {
 

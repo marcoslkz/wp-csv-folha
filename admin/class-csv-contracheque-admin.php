@@ -18,7 +18,7 @@
  *
  * @package    csv_contracheque
  * @subpackage csv_contracheque/admin
- * @author    marcoslkz <firdaus@fsylum.net>
+ * @author    marcoslkz <mail>
  */
 class csv_contracheque_Admin
 {
@@ -158,7 +158,7 @@ class csv_contracheque_Admin
 
 		add_settings_field(
 			$this->option_name . '_month',
-			__('Informe o mês do arquivo:', 'csv-contracheque'),
+			__('Informe o período do arquivo:', 'csv-contracheque'),
 			array($this, $this->option_name . '_month_cb'),
 			$this->plugin_name,
 			$this->option_name . '_general',
@@ -175,6 +175,8 @@ class csv_contracheque_Admin
 		);
 
 		register_setting($this->plugin_name, $this->option_name . '_month', 'intval');
+		register_setting($this->plugin_name, $this->option_name . '_year', 'intval');
+		register_setting($this->plugin_name, $this->option_name . '_decimo', 'intval');
 		//register_setting($this->plugin_name, $this->option_name . '_upload');
 
 	}
@@ -188,7 +190,7 @@ class csv_contracheque_Admin
 	{
 		global $wpdb;
 
-		echo '<p>' . __('Primeiro, escolha o mês e salve, em seguida envie o arquivo.', 'csv-contracheque') . '</p>';
+		echo '<p>' . __('Primeiro, escolha o mês e ano, então salve. Após definir o mês/ano envie o arquivo.', 'csv-contracheque') . '</p>';
 	}
 
 	/**
@@ -199,18 +201,34 @@ class csv_contracheque_Admin
 	public function csv_contracheque_month_cb()
 	{
 		$selected_month = get_option($this->option_name . '_month');
-	?>
+		$selected_year = get_option($this->option_name . '_year');
+?>
 		<!-- HTML markup for the "Escolha o mês" option field -->
 		<fieldset>
 			<label for="<?php echo $this->option_name . '_month'; ?>"><?php _e('', 'csv-contracheque'); ?></label>
 			<select name="<?php echo $this->option_name . '_month'; ?>" id="<?php echo $this->option_name . '_month'; ?>">
-				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o mês!', 'csv-contracheque'); ?></option>
+				<option value="0" <?php selected($selected_month, 0); ?>><?php _e('Escolha o período!', 'csv-contracheque'); ?></option>
 				<?php
 				// Generate options for months
 				for ($i = 1; $i <= 12; $i++) {
 					echo '<option value="' . $i . '" ' . selected($selected_month, $i) . '>' . date("F", mktime(0, 0, 0, $i, 1)) . '</option>';
 				}
 				?>
+			</select>
+		</fieldset>
+		<!-- HTML markup for the "Escolha o mês" option field -->
+		<fieldset>
+			<select name="<?php echo $this->option_name . '_year'; ?>" id="<?php echo $this->option_name . '_year'; ?>">
+				<option value="0" <?php selected($selected_year, 0); ?>></option>
+				<?php
+				// Generate options 
+				for ($i = 2000; $i <= 2035; $i++) {
+					echo '<option value="' . $i . '" ' . selected($selected_year, $i) . '>' . $i . '</option>';
+				}
+				?>
+			</select>
+			<select name="<?php echo $this->option_name . '_decimo'; ?>" id="<?php echo $this->option_name . '_decimo'; ?>">
+				<option value="0" >Folha</option><option value="1" >Décimo terceiro</option>
 			</select>
 		</fieldset>
 	<?php
@@ -224,12 +242,14 @@ class csv_contracheque_Admin
 	 */
 	public function csv_contracheque_csv_cb()
 	{
-		?>
-		<?php
+	?>
+<?php
 		$selected_month = get_option($this->option_name . '_month');
+		$selected_year = get_option($this->option_name . '_year');
+		$selected_decimo = get_option($this->option_name . '_decimo');
 
-		echo '<p style="color: black;">Mês ' . $selected_month . ': ' . $this->table_count_by_month($selected_month) .' linhas.</p>';
-		
+		echo '<p style="color: black;">Período ' . $selected_month . '/' . $selected_year . ': ' . $this->table_get_by_month_and_year($selected_month, $selected_year) . ' linhas.</p>';
+
 		// Process CSV file if form is send
 		//if (isset($_POST['upload_csv']) && check_admin_referer('csv_upload_nonce', 'csv_upload_nonce') && $selected_month !== 0) {
 		if ($_SERVER['REQUEST_METHOD'] == 'POST' && $selected_month > 0) {
@@ -242,8 +262,10 @@ class csv_contracheque_Admin
 
 			// Read CSV data
 			try {
-				$file_path=$csv_file['tmp_name'];
-				$csv_data = array_map(function($v){return str_getcsv($v, "\t");}, file($file_path, FILE_SKIP_EMPTY_LINES));
+				$file_path = $csv_file['tmp_name'];
+				$csv_data = array_map(function ($v) {
+					return str_getcsv($v, "\t");
+				}, file($file_path, FILE_SKIP_EMPTY_LINES));
 				$csv_data = mb_convert_encoding($csv_data, 'UTF-8', 'ISO-8859-1');
 			} catch (Exception $e) {
 				// Handle the exception here (e.g., log the error or display a message)
@@ -251,10 +273,11 @@ class csv_contracheque_Admin
 				wp_die('Error creating table: ' . $e->getMessage());
 			}
 
-			$result = $this->table_delete_by_month($selected_month);
-			$result = $this->insert_csv_data($csv_data, $selected_month);
+			if (!$selected_decimo ) $result = $this->table_delete_by_month_and_year($selected_month, $selected_year);
+			$result = $this->insert_csv_data($csv_data, $selected_month); // not year
 			if ($result) {
-				echo '<p style="color: green;">CSV Importado: ' . $this->table_count_by_month($selected_month) .' linhas adicionadas no banco.</p>';
+				echo '<p style="color: green;">CSV OK: ' .
+					$this->table_get_by_month_and_year($selected_month, $selected_year) . ' linhas adicionadas no banco.</p>';
 			} else {
 				echo '<p style="color: red;">CSV error: verifique o arquivo.</p>';
 			}
@@ -271,7 +294,7 @@ class csv_contracheque_Admin
 		if (!$wpdb->get_var("select 1 from information_schema.tables where table_name='$this->table_name '")) {
 			$charset_collate = $wpdb->get_charset_collate();
 
-			$sql = "CREATE TABLE $this->table_name (id mediumint(9) UNSIGNED NOT NULL AUTO_INCREMENT, "
+			$sql = "CREATE TABLE $this->table_name (id mediumint(9) NOT NULL AUTO_INCREMENT, "
 				. $this->generate_field_columns()
 				. ", PRIMARY KEY  (id)) $charset_collate;";
 
@@ -323,54 +346,41 @@ class csv_contracheque_Admin
 		}
 		return $return;
 	}
-	
+
 	/**
 	 * Count lines rows based on "month" value in table
 	 *
 	 * @param  string $month
 	 * @return bool
 	 */
-	private function table_count_by_month($month)
+	private function table_get_by_month_and_year($month, $year)
 	{
 		global $wpdb;
 
 		// Prepare SQL statement
-		$sql = "SELECT COUNT(*) FROM $this->table_name  WHERE month = %s"; 
+		$sql = "SELECT COUNT(*) FROM $this->table_name  WHERE  month = %s AND field_57 like  %s";
 
 		// Prepare and execute query
-		$result = $wpdb->get_var($wpdb->prepare($sql, $month));
+		$result = $wpdb->get_var($wpdb->prepare($sql, $month, '%' . $wpdb->esc_like($year)));
 
 		return $result ? (int) $result : 0;
 	}
-	
-	private function table_get_month_and_years($cpf, $month, $year)
-	{
-		global $wpdb;
 
-		// Prepare SQL statement
-		$sql = "SELECT COUNT(*) FROM $this->table_name  WHERE field_10 = %s AND month = %s AND field_11 = %s"; 
-
-		// Prepare and execute query
-		$result = $wpdb->get_var($wpdb->prepare($sql, $cpf, $month, $year));
-
-		return $result ? (int) $result : 0;
-	}
-	
 	/**
 	 * Delete rows based on "month" value in table
 	 *
 	 * @param  string $month
 	 * @return bool
 	 */
-	function table_delete_by_month($month)
+	function table_delete_by_month_and_year($month, $year)
 	{
 		global $wpdb;
 
 		// Prepare SQL statement
-		$sql = "DELETE FROM $this->table_name  WHERE month = %s";
+		$sql = "DELETE FROM $this->table_name  WHERE month = %s AND field_11 = %s";
 
 		// Prepare and execute query
-		$result = $wpdb->query($wpdb->prepare($sql, $month));
+		$result = $wpdb->query($wpdb->prepare($sql, $month, $year));
 
 		// Return true if successful, false otherwise
 		return $result !== false;
