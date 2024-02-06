@@ -295,8 +295,19 @@
 			// Set some content to display (table data)
 			$html .= '<h4>' . esc_html($results[0]->field_8) . "<br>CNPJ: " . esc_html($results[0]->field_10) . '      Ref.' . esc_html($results[0]->field_57) . '</h4>';
 			$html .= '<table >';
-			$html .= '<tr><th>Código: <br>' . esc_html($results[0]->field_3) . '</th><th  colspan="3" rowspan="1">Nome:<br>' . esc_html($results[0]->field_4) . '</th><th>CPF:<br>' . esc_html($results[0]->field_9) . '</th><th>Função:<br>' . esc_html($results[0]->field_12) . '</th><th>Seção:<br>' . esc_html($results[0]->field_14) . '</th></tr>';
-			$html .= '<tr><th>Cód.</th><th colspan="3" rowspan="1">Descrição</th><th>Referência</th><th>Vencimentos</th><th>Descontos</th></tr>';
+			$html .= '<tr><th>Código: <br>' . esc_html($results[0]->field_3) . '</th>
+			<th  colspan="3" rowspan="1">Nome:<br>' . esc_html($results[0]->field_4) . '</th>
+			<th>CPF:<br>' . esc_html($results[0]->field_9) . '</th>
+			<th>Função:<br>' . esc_html($results[0]->field_12) . '</th>
+			<th>Seção:<br>' . esc_html($results[0]->field_14) . '</th>
+			</tr>';
+			$html .= '<tr>
+			<th>Cód.</th>
+			<th colspan="3" rowspan="1">Descrição</th>
+			<th>Referência</th>
+			<th>Vencimentos</th>
+			<th>Descontos</th>
+			</tr>';
 
 			foreach ($results as $row) {
 				$html .= '<tr>';
@@ -306,14 +317,14 @@
 				$valor = str_replace(',', '.', $row->field_25);
 				if ($row->field_26 == 'D') {
 					$descontos = bcadd($valor, $descontos, 2);
-					$html .= '<td> </td><td>' . $this->number_double($row->field_25) . '</td>';
+					$html .= '<td></td><td>' . $this->number_double($row->field_25) . '</td>';
 				} elseif ($row->field_26 == 'P') {
-					$html .= '<td>' . $this->number_double($row->field_25) . '</td><td> </td>';
+					$html .= '<td>' . $this->number_double($row->field_25) . '</td><td></td>';
 					$vencimentos = bcadd($valor, $vencimentos, 2);
 				} else {
 					$html .= '<td></td><td></td>';
 				}
-				//$html .= '</tr>';
+				$html .= '</tr>';
 			}
 
 			foreach ($results as $row) {
@@ -349,11 +360,35 @@
 			$html = '
 				<html>
 				<head>
-				<link rel="stylesheet" href="'.  plugin_dir_url(__FILE__) . '/css/csv-contracheque-public.css">
+				<style>
+				body {
+				background-size: 100% 100%;
+				font-size: 70%;
+				bottom:   0px;
+                left:     0px;
+    
+				}
+            #watermark {
+				//background-image: url("data:image/jpeg;base64,' 
+				. base64_encode(file_get_contents(plugin_dir_path(__FILE__) . '/img/folha.jpeg'))  . '");
+				background-repeat: no-repeat;
+				background-size: 100% 100%;
+				position: fixed;
+                bottom:   0px;
+                left:     0px;
+
+                /** Your watermark should be behind every content**/
+                z-index:  -1000;
+            }
+				</style>
+				<link rel="stylesheet" href="' .  plugin_dir_url(__FILE__) . '/css/csv-contracheque-public.css">
+	
 					<title>' . $title . '</title>
 				</head>
 				<body>
-					' . $content . '
+				<div id="watermark">'
+				. $content . '
+				</div>
 				</body>
 				</html>
 			';
@@ -370,31 +405,6 @@
 			// (Optional) Setup the paper size and orientation
 			$dompdf->setPaper('A4');
 			$dompdf->render();
-
-			// Instantiate canvas instance 
-			$canvas = $dompdf->getCanvas();
-
-			// Get height and width of page 
-			$w = $canvas->get_width();
-			$h = $canvas->get_height();
-
-			// Specify watermark image 
-			$imageURL = plugin_dir_path(__FILE__) . 'img/folha.jpeg';
-			$imgWidth = 200;
-			$imgHeight = 20;
-
-			// Set image opacity 
-			//$canvas->set_opacity(.5);
-
-			// Specify horizontal and vertical position 
-			$x = (($w - $imgWidth) / 2);
-			$y = (($h - $imgHeight) / 2);
-			$canvas->clipping_rectangle(0, 0, $w, $h);
-
-			// Add an image to the pdf 
-			$canvas->image($imageURL, 0,0, $w, $h);
-			$canvas->clipping_end();
-
 
 			// Output the generated PDF (1 = download and 0 = preview) 
 			$dompdf->stream('Folha.pdf', array("Attachment" => 0));
@@ -414,7 +424,6 @@
 
 			//}
 		}
-
 
 		// Shortcode function
 		function contracheque_form_pdf_shortcode()

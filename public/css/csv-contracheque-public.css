@@ -4,20 +4,52 @@
  */
 
 
- .csv-contracheque th {
-    font-weight: bold;
+.csv-contracheque th {
+  font-weight: bold;
   font-size: 10px;
 }
 
 .csv-contracheque td {
-    font-weight: bold;
+  font-weight: bold;
   font-size: 10px;
 }
 
 
-.csv-contracheque table, .csv-contracheque td, .csv-contracheque th {
-    text-align: left;
+.csv-contracheque table,
+.csv-contracheque td,
+.csv-contracheque th {
+  text-align: left;
   border: 1px solid black;
   border-collapse: collapse;
 }
 
+/** 
+  * Set the margins of the PDF to 0
+  * so the background image will cover the entire page.
+  **/
+@page {
+  margin: 0cm 0cm;
+}
+
+/**
+  * Define the real margins of the content of your PDF
+  * Here you will fix the margins of the header and footer
+  * Of your background image.
+  **/
+body {
+  margin-top: 3.5cm;
+  margin-bottom: 1cm;
+  margin-left: 1cm;
+  margin-right: 1cm;
+}
+
+/** 
+  * Define the width, height, margins and position of the watermark.
+  **/
+#watermark {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  /** Your watermark should be behind every content**/
+  z-index: -1000;
+}
