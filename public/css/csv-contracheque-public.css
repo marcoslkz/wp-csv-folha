@@ -4,23 +4,29 @@
  */
 
 
-.csv-contracheque th {
+ .csv-contracheque th {
   font-weight: bold;
-  font-size: 10px;
+  font-size: 0.7em;
 }
 
 .csv-contracheque td {
   font-weight: bold;
-  font-size: 10px;
+  font-size: 0.6em;
 }
 
+.csv-contracheque table{
+  border: 1px solid black;
+  border-collapse: collapse;
+   width:100%;
+   overflow-wrap: break-word;
+}
 
-.csv-contracheque table,
 .csv-contracheque td,
 .csv-contracheque th {
   text-align: left;
   border: 1px solid black;
   border-collapse: collapse;
+	padding: 5px; 
 }
 
 /** 
