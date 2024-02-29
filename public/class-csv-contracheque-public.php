@@ -335,10 +335,14 @@ class csv_contracheque_Public
 		$html .= '</table >';
 		$html .= '<table >';
 		$html .= '<tr><th colspan="5" rowspan="1">TOTAIS: </th><th>' . $this->number_double($vencimentos) . '</th><th>' . $this->number_double($descontos) . '</th></tr>';
+		$html .= '</table >';
+		$html .= '<table >';
 		$html .= '<td colspan="2" rowspan="1">' . esc_html($row->field_39) . '</td><td>Agência: ' . esc_html($row->field_28) . '-' . esc_html($row->field_29) .
-			'</td><td colspan="2" rowspan="1"></td><td  colspan="1" rowspan="2">Valor Líquido: </td><td  colspan="1" rowspan="2">' . bcsub($vencimentos, $descontos, 2) . '</td></tr>';
+			'</td><td colspan="2" rowspan="1"></td><td  colspan="1" rowspan="1">Valor Líquido: </td><td  colspan="1" rowspan="1">' . bcsub($vencimentos, $descontos, 2) . '</td></tr>';
 		$html .= '<tr><td colspan="2" rowspan="1">CPF: ' . esc_html($row->field_9) . '</td><td></td></tr>';
 
+		$html .= '</table >';
+		$html .= '<table >';
 		$html .= '<tr><td colspan="2" rowspan="1">Salário Base:<br>' . esc_html($row->field_30) . '</td><td>Sal.Contr.INSS:<br>' . esc_html($row->field_31) .
 			'</td><td>Base Cálc. FGTS:<br>' . $this->number_double($row->field_34) .
 			'</td><td>F.G.T.S. do Mês:<br>' . $this->number_double($row->field_35) .
@@ -410,7 +414,7 @@ border-collapse: collapse;
 		$dompdf->render();
 
 		// Output the generated PDF (1 = download and 0 = preview) 
-		$dompdf->stream('Contracheque.pdf', array("Attachment" => 0));
+		$dompdf->stream('Contracheque.pdf', array("Attachment" => 1));
 
 		//$dompdf->stream();
 		//$dompdf->stream('contracheque_' .  $this->get_month_ptbr($this->convertDateStringToMonth($ref)) . '.pdf', array('Attachment' => 0));
