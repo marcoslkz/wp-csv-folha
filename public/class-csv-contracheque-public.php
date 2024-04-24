@@ -10,9 +10,10 @@
  * @subpackage csv_contracheque/public
  */
 
-require_once  'dompdf/autoload.inc.php';
+//require_once  'dompdf/autoload.inc.php';
+require_once('tcpdf/tcpdf.php');
 
-use Dompdf\Dompdf;
+//use Dompdf\Dompdf;
 //use Dompdf\Options;
 
 /**
@@ -46,6 +47,16 @@ class csv_contracheque_Public
 	 */
 	private $version;
 	private $table_name;
+
+
+	/**
+	 * The options name to be used in this plugin
+	 *
+	 * @since  	1.0.0
+	 * @access 	private
+	 * @var  	string 		$option_name 	Option name of this plugin
+	 */
+	private $option_name = 'csv_contracheque';
 
 	/**
 	 * Initialize the class and set its properties.
@@ -295,13 +306,19 @@ class csv_contracheque_Public
 		// Set some content to display (table data)
 		$html .= '<br><br><h4>' . esc_html($results[0]->field_8) . "<br>CNPJ: " . esc_html($results[0]->field_10) . '      Ref.' . esc_html($results[0]->field_57) . '</h4>';
 		$html .= '<table >';
-		$html .= '<tr><th>Código: <br>' . esc_html($results[0]->field_3) . '</th>
-		<th  colspan="2" rowspan="1">Nome:<br>' . esc_html($results[0]->field_4) . '</th>
-		<th>CPF:<br>' . esc_html($results[0]->field_9) . '</th>
-		<th colspan="2">Função:<br>' . esc_html($results[0]->field_12) . '</th>
-		<th>Seção:<br>' . esc_html($results[0]->field_14) . '</th>
-		</tr>';
-		$html .= '</table ><table >';
+		$html .= '<tr><th>Código' . 
+		'</th><th  colspan="2" rowspan="1">Nome' .
+		'</th><th>CPF' . 
+		'</th><th colspan="1">Função' . 
+		'</th><th colspan="2">Seção' .
+		'</th></tr>';
+		$html .= '<tr><td>' . esc_html($results[0]->field_3) . 
+		'</td><td  colspan="2" rowspan="1">' . esc_html($results[0]->field_4) . 
+		'</td><td>' . esc_html($results[0]->field_9) . 
+		'</td><td colspan="1">' . esc_html($results[0]->field_12) . 
+		'</td><td colspan="2">' . esc_html($results[0]->field_14) . 
+		'</td></tr>';
+		//$html .= '</table ><table >';
 		$html .= '<tr>
 		<th>Cód.</th>
 		<th colspan="3" rowspan="1">Descrição</th>
@@ -309,7 +326,8 @@ class csv_contracheque_Public
 		<th>Vencimentos</th>
 		<th>Descontos</th>
 		</tr>';
-
+		$countlines = 0;
+		
 		foreach ($results as $row) {
 			$html .= '<tr>';
 			$html .= '<td>' . esc_html($row->field_23) . '</td>';
@@ -326,74 +344,69 @@ class csv_contracheque_Public
 				$html .= '<td></td><td></td>';
 			}
 			$html .= '</tr>';
+			$countlines++;
+		}
+		
+		for($i = 0; $i < (11-$countlines); ++$i) {
+			$html .= '<tr><td> - </td><td colspan="3" rowspan="1"></td><td></td><td></td><td></td></tr>';
 		}
 
-		foreach ($results as $row) {
-			$html .= '<tr><td><br></td><td colspan="3" rowspan="1"></td><td></td><td></td><td></td></tr>';
-		}
-
-		$html .= '</table >';
-		$html .= '<table >';
 		$html .= '<tr><th colspan="5" rowspan="1">TOTAIS: </th><th>' . $this->number_double($vencimentos) . '</th><th>' . $this->number_double($descontos) . '</th></tr>';
-		$html .= '</table >';
-		$html .= '<table >';
-		$html .= '<td colspan="2" rowspan="1">' . esc_html($row->field_39) . '</td><td>Agência: ' . esc_html($row->field_28) . '-' . esc_html($row->field_29) .
-			'</td><td colspan="2" rowspan="1"></td><td  colspan="1" rowspan="1">Valor Líquido: </td><td  colspan="1" rowspan="1">' . bcsub($vencimentos, $descontos, 2) . '</td></tr>';
-		$html .= '<tr><td colspan="2" rowspan="1">CPF: ' . esc_html($row->field_9) . '</td><td></td></tr>';
+		//$html .= '</table >';
+		//$html .= '<table >';
+		$html .= '<tr><td colspan="3">' . esc_html($row->field_39) .
+			'</td><th colspan="2">Valor Líquido: </th><th colspan="2">' . $this->number_double(bcsub($vencimentos, $descontos, 2)) . 
+			'</th></tr>';
+		$html .=  '<tr><td colspan="7" rowspan="1">Agência: ' . esc_html($row->field_28) . '-' . esc_html($row->field_29) . 
+			' Conta '. esc_html($row->field_7) . ': ' . esc_html($row->field_5) . '-' . esc_html($row->field_6) . 
+			'</td></tr>';
 
-		$html .= '</table >';
-		$html .= '<table >';
-		$html .= '<tr><td colspan="2" rowspan="1">Salário Base:<br>' . esc_html($row->field_30) . '</td><td>Sal.Contr.INSS:<br>' . esc_html($row->field_31) .
-			'</td><td>Base Cálc. FGTS:<br>' . $this->number_double($row->field_34) .
-			'</td><td>F.G.T.S. do Mês:<br>' . $this->number_double($row->field_35) .
-			'</td><td>Base Cálculo IRRF:<br>' . $this->number_double($row->field_32) .
-			'</td><td>Faixa IRRF:<br>' . $this->number_double($row->field_36) .
+		$html .= '<tr><th colspan="2" rowspan="1">Salário Base' .
+			'</th><th>Sal.Contr.INSS' .
+			'</th><th>Base Cálc. FGTS' .
+			'</th><th>F.G.T.S. do Mês' .
+			'</th><th>Base Cálculo IRRF' .
+			'</th><th>Faixa IRRF' .
+			'</th></tr>';
+		$html .= '<tr><td colspan="2" rowspan="1">' . esc_html($row->field_30) . 
+			'</td><td>' . esc_html($row->field_31) .
+			'</td><td>' . $this->number_double($row->field_34) .
+			'</td><td>' . $this->number_double($row->field_35) .
+			'</td><td>' . $this->number_double($row->field_32) .
+			'</td><td>' . $this->number_double($row->field_36) .
 			'</td></tr>';
 		$html .= '</table>';
 		return $html;
-		// Output HTML content to PDF
-		//$pdf->writeHTML($html, true, false, true, false, '');
-
-		// Set the file name for the PDF download
-		//$file_name = 'table_data.pdf';
-
-		// Output PDF as a download file
-		//$pdf->Output($file_name, 'D');
 	}
 	function full_html($title, $content)
 	{
+		//	<link rel="stylesheet" href="' .  plugin_dir_url(__FILE__) . '/css/csv-contracheque-public.css">
 		$html = '
 			<html>
-			<head><style>
-.csv-contracheque th {
-font-weight: bold;
-font-size: 0.8em;
-}
-
-.csv-contracheque td {
-font-weight: bold;
-font-size: 0.7em;
-}
-
+			<head>
+				<style>
 .csv-contracheque table {
-width:100%;
-}
-
-.csv-contracheque table,
-.csv-contracheque td,
-.csv-contracheque th {
-text-align: left;
-border: 1px solid black;
 border-collapse: collapse;
-	padding: 5px; 
+width: 100%;
 }
-			</style>
-				<link rel="stylesheet" href="' .  plugin_dir_url(__FILE__) . '/css/csv-contracheque-public.css">
-	
-				<title>' . $title . '</title>
+.csv-contracheque th {
+border: 1px solid black;
+padding: 8px;
+white-space: nowrap; /* This prevents line breaks */
+
+font-weight: bold;
+}
+.csv-contracheque td {
+border: 1px solid black;
+padding: 8px;
+white-space: nowrap; /* This prevents line breaks */
+font-size: 0.9em; 
+}
+</style>
+					<title>' . $title . '</title>
 			</head>
 			<body>
-			<div class="csv-contracheque">'
+			<div class="csv-contracheque" style="overflow-x:auto;">'
 			. $content . '
 			</div>
 			</body>
@@ -403,33 +416,58 @@ border-collapse: collapse;
 		return $html;
 	}
 
+
+
 	public function generate_contracheque_pdf($cpf, $ref)
 	{
-		// instantiate and use the dompdf class
-		$dompdf = new Dompdf();
-		$dompdf->loadHtml($this->full_html("Contracheque", $this->show_contracheque($cpf, $ref)));
+// Your HTML content (replace this with your actual HTML)
+$html = $this->full_html("Contracheque", $this->show_contracheque($cpf, $ref));
 
-		// (Optional) Setup the paper size and orientation
-		$dompdf->setPaper('A4');
-		$dompdf->render();
+// Create a new TCPDF instance
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-		// Output the generated PDF (1 = download and 0 = preview) 
-		$dompdf->stream('Contracheque.pdf', array("Attachment" => 1));
+// Set document information
+$pdf->SetCreator(PDF_CREATOR);
+$pdf->SetAuthor('empresa');
+$pdf->SetTitle('Contracheque');
+$pdf->SetKeywords('PDF, HTML, PHP, TCPDF');
 
-		//$dompdf->stream();
-		//$dompdf->stream('contracheque_' .  $this->get_month_ptbr($this->convertDateStringToMonth($ref)) . '.pdf', array('Attachment' => 0));
-		//$pdf->SetTitle('Contracheque_' . $this->get_month_ptbr($month));
-		wp_die(); // Always include this to terminate the script
+// Set margins
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
-		//exit(); // Always include this to terminate the script
-		// Output the generated PDF as a response
-		$pdf_output = $dompdf->output();
-		header('Content-Type: application/pdf');
-		header('Content-Disposition: inline; filename="download.pdf"');
-		echo $pdf_output;
-		exit();
+    // Remover cabeçalho e rodapé padrão
+    $pdf->setPrintHeader(false);
+    $pdf->setPrintFooter(false);
 
-		//}
+// Add a page
+$pdf->AddPage();
+
+// URL da imagem
+//$image_url = wp_get_attachment_url(get_option($this->option_name . '_logoid'));
+$image_url = get_attached_file(get_option($this->option_name . '_logoid'));
+$image_size = get_attached_file(get_option($this->option_name . '_logosize'));
+$image_size = 50;
+		
+// Exibir a imagem no PDF
+if ($image_url) {
+    $htmli = '<img src="' . $image_url . '" width="'. $image_size .'"  />';
+	$pdf->writeHTML($htmli, true, false, true, false, '');
+    //$pdf->Image($image_url, 10, 10, 50, '', '', '', 'L', false, 300, '', false, false, 0, false, false, false);
+} else {
+    $pdf->Cell(0, 10, 'Logo '. $image_url .' não encontrado.', 0, 1, 'L');
+}
+		
+// Convert HTML to PDF
+//$html .= '<style>'.file_get_contents(_BASE_PATH.'public/css/csv-contracheque-public.css').'</style>';
+$pdf->writeHTML($html, true, false, true, false, 'J');
+
+// Output the PDF to the browser or save it to a file
+$pdf->Output('contracheque.pdf', 'I'); // 'I' for inline display, 'D' for download
+
+// Clean up
+$pdf->Close();
 	}
 
 	// Shortcode function
@@ -438,7 +476,7 @@ border-collapse: collapse;
 		// Get the current user object
 		$current_user = wp_get_current_user();
 		$cpf = "";
-		if (!$current_user->exists()) return "<p>Acesso negado.<\p>";
+		if (!$current_user->exists()) return "Acesso negado.";
 		else $cpf = esc_html($current_user->user_login);
 
 		// Display a simple form for selecting the month
@@ -456,7 +494,7 @@ border-collapse: collapse;
 
 		$html .=  '
 			</select>
-			<input type="submit" value="Exibir Contracheque">
+			<input type="submit" value="Imprimir Contracheque">
 			';
 
 		// Generate HTML for the table
@@ -516,3 +554,4 @@ border-collapse: collapse;
 		wp_die(); // Always include this to terminate the script
 	}
 }
+

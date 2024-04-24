@@ -3,7 +3,6 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * @link       http://fsylum.net
  * @since      1.0.0
  *
  * @package    csv_contracheque
@@ -173,7 +172,18 @@ class csv_contracheque_Admin
 			$this->option_name . '_general',
 			array('label_for' => $this->option_name . '_upload')
 		);
+		
+		add_settings_field(
+			$this->option_name . '_logoid',
+			__('Logo da Empresa: ', 'csv-contracheque'),
+			array($this, $this->option_name . '_logoid_cb'),
+			$this->plugin_name,
+			$this->option_name . '_general',
+			array('label_for' => $this->option_name . '_logoid')
+		);
 
+
+		register_setting($this->plugin_name, $this->option_name . '_logoid', 'intval');
 		register_setting($this->plugin_name, $this->option_name . '_month', 'intval');
 		register_setting($this->plugin_name, $this->option_name . '_year', 'intval');
 		register_setting($this->plugin_name, $this->option_name . '_decimo', 'intval');
@@ -202,6 +212,7 @@ class csv_contracheque_Admin
 	{
 		$selected_month = get_option($this->option_name . '_month');
 		$selected_year = get_option($this->option_name . '_year');
+
 ?>
 		<!-- HTML markup for the "Escolha o mês" option field -->
 		<fieldset>
@@ -231,6 +242,7 @@ class csv_contracheque_Admin
 				<option value="0" >Folha</option><option value="1" >Décimo terceiro</option>
 			</select>
 		</fieldset>
+
 	<?php
 		#echo '<input type="text" name="' . $this->option_name . '_month' . '" id="' . $this->option_name . '_month' . '" value="' . $month . '"> ' . __('', 'csv-contracheque');
 	}
@@ -240,10 +252,45 @@ class csv_contracheque_Admin
 	 *
 	 * @since  1.0.0
 	 */
+	public function csv_contracheque_logoid_cb()
+	{
+		$selected_logo = get_option($this->option_name . '_logoid');
+
+?>
+		<!-- HTML markup for the "Logo" option field -->
+		<fieldset>
+			<label for="<?php echo $this->option_name . '_logoid'; ?>"><?php _e('', 'csv-contracheque'); ?></label>
+			<select name="<?php echo $this->option_name . '_logoid'; ?>" id="<?php echo $this->option_name . '_logoid'; ?>">
+			<option value="0" <?php selected($selected_logo, 0); ?>><?php _e('Selecione uma logo da Galeria de Mídia', 'csv-contracheque'); ?></option>
+				<?php
+				$imagens = get_posts(array(
+					'post_type' => 'attachment',
+					'posts_per_page' => -1,
+					'post_status' => 'inherit',
+					'post_mime_type' => 'image'
+				));
+
+				// Generate options for images
+				foreach ($imagens as $imagem) {
+					//$imagem_url = wp_get_attachment_url($imagem->ID);
+					echo '<option value="' . $i . '" ' . selected($selected_year, $i) . '>' . $i . '</option>';
+					echo '<option value="' . $imagem->ID . '" ' . selected($selected_logo, $imagem->ID) . '>' . $imagem->post_title . '</option>';
+				}
+				?>
+			</select>
+		</fieldset>
+	<?php
+	}
+	/**
+	 * Render the CSV upload field and process the uploaded file
+	 *
+	 * @since  1.0.0
+	 */
 	public function csv_contracheque_csv_cb()
 	{
 	?>
 <?php
+		$selected_month = get_option($this->option_name . '_logoid');
 		$selected_month = get_option($this->option_name . '_month');
 		$selected_year = get_option($this->option_name . '_year');
 		$selected_decimo = get_option($this->option_name . '_decimo');
@@ -385,4 +432,6 @@ class csv_contracheque_Admin
 		// Return true if successful, false otherwise
 		return $result !== false;
 	}
+
 }
+
